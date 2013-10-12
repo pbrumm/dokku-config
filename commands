@@ -124,14 +124,27 @@ case "$1" in
     ;;
 
   config:unset)
-    APP="$2"; IMAGE="app/$APP"
+    if [[ -z $3 ]]; then
+        echo "Usage: heroku config:unset KEY1 [KEY2 ...]"
+        echo "nMust specify KEY to unset."
+        exit 1
+    fi
+
+    APP="$2";
     APP_DIR="/home/git/$APP"
+    ENV_FILE="$APP_DIR/ENV"
+    ENV_TEMP=`cat "${ENV_FILE}"`
+    ID=$(< "$APP_DIR/CONTAINER")
+    VARS="${*:3}"
 
-    source $APP_DIR/ENV_MAPPING.sh
+    for var in $VARS; do
+        echo "Unsetting $var and restarting $APP"
+        ENV_TEMP=$(echo -e "${ENV_TEMP}" | sed "/^export $var=/ d")
 
-    a="MAPPING_$3"
-
-    sed "${!a}d" $APP_DIR/ENV
+        docker stop $ID > /dev/null
+        echo -e "$ENV_TEMP" | sort > $ENV_FILE
+        docker start $ID > /dev/null
+    done
     ;;
 
   help)
