@@ -73,7 +73,8 @@ case "$1" in
 
     config:get)
         if [[ -z $3 ]]; then
-            echo "Usage: heroku config:get KEY\nMust specify KEY."
+            echo "Usage: dokku config:get APP KEY"
+            echo "Must specify KEY."
             exit 1
         fi
 
@@ -126,8 +127,8 @@ case "$1" in
 
     config:unset)
         if [[ -z $3 ]]; then
-            echo "Usage: heroku config:unset KEY1 [KEY2 ...]"
-            echo "nMust specify KEY to unset."
+            echo "Usage: dokku config:unset APP KEY1 [KEY2 ...]"
+            echo "Must specify KEY to unset."
             exit 1
         fi
 
