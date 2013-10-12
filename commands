@@ -17,6 +17,31 @@ if [[ $1 == config:* ]]; then
     fi
 fi
 
+styled_hash () {
+    vars=`echo -e "$1"`
+
+    longest=""
+    for word in $vars; do
+        KEY=`echo $word | cut -d"=" -f1`
+        if [ ${#KEY} -gt ${#longest} ]; then
+            longest=$KEY
+        fi
+    done
+
+    for word in $vars; do
+        KEY=`echo $word | cut -d"=" -f1`
+        VALUE=`echo $word | cut -d"=" -f2-`
+
+        num_zeros=$((${#longest} - ${#KEY}))
+        zeros=" "
+        while [ $num_zeros -gt 0 ]; do
+            zeros="$zeros "
+            num_zeros=$(($num_zeros - 1))
+        done
+        echo "$KEY:$zeros$VALUE"
+    done
+}
+
 case "$1" in
 
     config)
