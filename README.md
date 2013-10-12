@@ -27,7 +27,6 @@ $ dokku help
 TODO
 ----
 
-- Add support for `config:set key=value` calls
-- Add support for setting multiple values via `config:set`
+- Add proper support for `config:unset`
 - Properly restart dokku instances after setting/unsetting environment variables
 - Test this against a real dokku instance
