@@ -27,5 +27,4 @@ $ dokku help
 TODO
 ----
 
-- Restart application for each `config:set` call
 - Test this against a real dokku instance
