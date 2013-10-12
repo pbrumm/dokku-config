@@ -18,15 +18,13 @@ Commands
 --------
 ```
 $ dokku help
-     config <app>                    List all environment variables
-     config:get <app>                List a specific environment variable
-     config:set <app> <key> <value>  Set an environment variable
-     config:unset <app> <key>        Unset an environment variable
+     config <app>                                    display the config vars for an app
+     config:get <app> KEY                            display a config value for an app
+     config:set <app> KEY1=VALUE1 [KEY2=VALUE2 ...]  set one or more config vars
+     config:unset <app> KEY1 [KEY2 ...]              unset one or more config vars
 ```
 
 TODO
 ----
 
-- Add proper support for `config:unset`
-- Properly restart dokku instances after setting/unsetting environment variables
 - Test this against a real dokku instance
