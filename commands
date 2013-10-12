@@ -42,6 +42,17 @@ styled_hash () {
     done
 }
 
+config_restart_app() {
+    APP="$1"; IMAGE="app/$APP"
+
+    echo "-----> Releasing $APP ..."
+    dokku release $APP $IMAGE
+    echo "-----> Release complete!"
+    echo "-----> Deploying $APP ..."
+    dokku deploy $APP $IMAGE
+    echo "-----> Deploy complete!"
+}
+
 case "$1" in
 
     config)
@@ -97,7 +108,7 @@ case "$1" in
             exit 1
         fi
 
-        APP="$2";
+        APP="$2"; IMAGE="app/$APP"
         APP_DIR="/home/git/$APP"
         ENV_FILE="APP_DIR/ENV"
         ENV_ADD=""
@@ -120,9 +131,8 @@ case "$1" in
         echo "Setting config vars and restarting $APP"
         styled_hash "$ENV_ADD"
 
-        docker stop $ID > /dev/null
         echo -e "$ENV_TEMP" | sort > $ENV_FILE
-        docker start $ID > /dev/null
+        config_restart_app $APP
     ;;
 
     config:unset)
@@ -132,7 +142,7 @@ case "$1" in
             exit 1
         fi
 
-        APP="$2";
+        APP="$2"; IMAGE="app/$APP"
         APP_DIR="/home/git/$APP"
         ENV_FILE="$APP_DIR/ENV"
         ENV_TEMP=`cat "${ENV_FILE}"`
@@ -143,9 +153,8 @@ case "$1" in
             echo "Unsetting $var and restarting $APP"
             ENV_TEMP=$(echo -e "${ENV_TEMP}" | sed "/^export $var=/ d")
 
-            docker stop $ID > /dev/null
             echo -e "$ENV_TEMP" | sort > $ENV_FILE
-            docker start $ID > /dev/null
+            config_restart_app $APP
         done
     ;;
 
