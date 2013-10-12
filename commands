@@ -70,89 +70,89 @@ case "$1" in
         echo "=== $APP Config Vars"
         styled_hash "$VARS"
 
-  config:get)
-    if [[ -z $3 ]]; then
-        echo "Usage: heroku config:get KEY\nMust specify KEY."
-        exit 1
-    fi
-
-    APP="$2";
-    ENV_FILE="/home/git/$APP/ENV"
-
-    if [ ! -f $ENV_FILE ] || [ ! -s $ENV_FILE ] ; then
-        exit 1
-    fi
-
-    KEY="$3"
-
-    cat $ENV_FILE | grep -Eo "export ([A-Z\d_]+=.*)" | cut -d" " -f2 | grep $KEY | cut -d"=" -f2-
-    ;;
-
-  config:set)
-    if [[ -z "${*:3}" ]]; then
-        echo "Usage: dokku config:set APP KEY1=VALUE1 [KEY2=VALUE2 ...]"
-        echo "Must specify KEY and VALUE to set."
-        exit 1
-    fi
-
-    APP="$2";
-    APP_DIR="/home/git/$APP"
-    ENV_FILE="APP_DIR/ENV"
-    ENV_ADD=""
-    ENV_TEMP=`cat "${ENV_FILE}"`
-    ID=$(< "$APP_DIR/CONTAINER")
-    VARS="${*:3}"
-
-    for var in $VARS; do
-        KEY=`echo ${var} | grep -Eo "([a-zA-Z\d_]+=.*)" | cut -d"=" -f1`
-        VALUE=`echo ${var} | grep -Eo "([a-zA-Z\d_]+=.*)" | cut -d"=" -f2-`
-
-        if [ ${#VALUE} -gt 0 ]; then
-            ENV_TEMP=$(echo -e "${ENV_TEMP}" | sed "/^export $KEY=/ d")
-            ENV_TEMP="${ENV_TEMP}\nexport ${var}"
-            ENV_ADD=$(echo -e "${ENV_ADD}" | sed "/^$KEY=/ d")
-            ENV_ADD="${ENV_ADD}\n${var}"
+    config:get)
+        if [[ -z $3 ]]; then
+            echo "Usage: heroku config:get KEY\nMust specify KEY."
+            exit 1
         fi
-    done
 
-    echo "Setting config vars and restarting $APP"
-    styled_hash "$ENV_ADD"
+        APP="$2";
+        ENV_FILE="/home/git/$APP/ENV"
 
-    docker stop $ID > /dev/null
-    echo -e "$ENV_TEMP" | sort > $ENV_FILE
-    docker start $ID > /dev/null
+        if [ ! -f $ENV_FILE ] || [ ! -s $ENV_FILE ] ; then
+            exit 1
+        fi
+
+        KEY="$3"
+
+        cat $ENV_FILE | grep -Eo "export ([A-Z\d_]+=.*)" | cut -d" " -f2 | grep $KEY | cut -d"=" -f2-
     ;;
 
-  config:unset)
-    if [[ -z $3 ]]; then
-        echo "Usage: heroku config:unset KEY1 [KEY2 ...]"
-        echo "nMust specify KEY to unset."
-        exit 1
-    fi
+    config:set)
+        if [[ -z "${*:3}" ]]; then
+            echo "Usage: dokku config:set APP KEY1=VALUE1 [KEY2=VALUE2 ...]"
+            echo "Must specify KEY and VALUE to set."
+            exit 1
+        fi
 
-    APP="$2";
-    APP_DIR="/home/git/$APP"
-    ENV_FILE="$APP_DIR/ENV"
-    ENV_TEMP=`cat "${ENV_FILE}"`
-    ID=$(< "$APP_DIR/CONTAINER")
-    VARS="${*:3}"
+        APP="$2";
+        APP_DIR="/home/git/$APP"
+        ENV_FILE="APP_DIR/ENV"
+        ENV_ADD=""
+        ENV_TEMP=`cat "${ENV_FILE}"`
+        ID=$(< "$APP_DIR/CONTAINER")
+        VARS="${*:3}"
 
-    for var in $VARS; do
-        echo "Unsetting $var and restarting $APP"
-        ENV_TEMP=$(echo -e "${ENV_TEMP}" | sed "/^export $var=/ d")
+        for var in $VARS; do
+            KEY=`echo ${var} | grep -Eo "([a-zA-Z\d_]+=.*)" | cut -d"=" -f1`
+            VALUE=`echo ${var} | grep -Eo "([a-zA-Z\d_]+=.*)" | cut -d"=" -f2-`
+
+            if [ ${#VALUE} -gt 0 ]; then
+                ENV_TEMP=$(echo -e "${ENV_TEMP}" | sed "/^export $KEY=/ d")
+                ENV_TEMP="${ENV_TEMP}\nexport ${var}"
+                ENV_ADD=$(echo -e "${ENV_ADD}" | sed "/^$KEY=/ d")
+                ENV_ADD="${ENV_ADD}\n${var}"
+            fi
+        done
+
+        echo "Setting config vars and restarting $APP"
+        styled_hash "$ENV_ADD"
 
         docker stop $ID > /dev/null
         echo -e "$ENV_TEMP" | sort > $ENV_FILE
         docker start $ID > /dev/null
-    done
     ;;
 
-  help)
-    cat && cat<<EOF
-    config <app>                                    display the config vars for an app
-    config:get <app> KEY                            display a config value for an app
-    config:set <app> KEY1=VALUE1 [KEY2=VALUE2 ...]  set one or more config vars
-    config:unset <app> KEY1 [KEY2 ...]              unset one or more config vars
+    config:unset)
+        if [[ -z $3 ]]; then
+            echo "Usage: heroku config:unset KEY1 [KEY2 ...]"
+            echo "nMust specify KEY to unset."
+            exit 1
+        fi
+
+        APP="$2";
+        APP_DIR="/home/git/$APP"
+        ENV_FILE="$APP_DIR/ENV"
+        ENV_TEMP=`cat "${ENV_FILE}"`
+        ID=$(< "$APP_DIR/CONTAINER")
+        VARS="${*:3}"
+
+        for var in $VARS; do
+            echo "Unsetting $var and restarting $APP"
+            ENV_TEMP=$(echo -e "${ENV_TEMP}" | sed "/^export $var=/ d")
+
+            docker stop $ID > /dev/null
+            echo -e "$ENV_TEMP" | sort > $ENV_FILE
+            docker start $ID > /dev/null
+        done
+    ;;
+
+    help)
+        cat && cat<<EOF
+        config <app>                                    display the config vars for an app
+        config:get <app> KEY                            display a config value for an app
+        config:set <app> KEY1=VALUE1 [KEY2=VALUE2 ...]  set one or more config vars
+        config:unset <app> KEY1 [KEY2 ...]              unset one or more config vars
 EOF
     ;;
 
