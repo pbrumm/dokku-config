@@ -69,6 +69,7 @@ case "$1" in
 
         echo "=== $APP Config Vars"
         styled_hash "$VARS"
+    ;;
 
     config:get)
         if [[ -z $3 ]]; then
