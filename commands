@@ -67,31 +67,8 @@ case "$1" in
             exit 1
         fi
 
-        longest=""
-        for word in $VARS; do
-            key=`echo $word | cut -d"=" -f1`
-            if [ ${#key} -gt ${#longest} ]; then
-                longest=$key
-            fi
-        done
-
         echo "=== $APP Config Vars"
-        for word in $VARS; do
-            KEY=`echo $word | cut -d"=" -f1`
-            VALUE=`echo $word | cut -d"=" -f2-`
-
-            if [ ${#KEY} -eq ${#longest} ]; then
-                echo "$KEY: $VALUE"
-            else
-                zeros=" "
-                num_zeros=`expr ${#longest} - ${#KEY}`
-                while [ $num_zeros -gt 0 ]; do
-                    zeros="$zeros "
-                    num_zeros=`expr $num_zeros - 1`
-                done
-                echo "$KEY:$zeros$VALUE"
-            fi
-        done
+        styled_hash "$VARS"
 
   config:get)
     if [[ -z $3 ]]; then
