@@ -3,169 +3,169 @@ set -e;
 
 # Check if name is specified
 if [[ $1 == config:* ]]; then
-    if [[ -z $2 ]]; then
-        echo "You must specify an app name"
-        exit 1
+  if [[ -z $2 ]]; then
+    echo "You must specify an app name"
+    exit 1
+  else
+    APP="$2"
+    # Check if app exists with the same name
+    if [[ -d "/home/git/$APP" ]]; then
+      APP_EXISTS=true
     else
-        APP="$2"
-        # Check if app exists with the same name
-        if [[ -d "/home/git/$APP" ]]; then
-            APP_EXISTS=true
-        else
-            APP_EXISTS=false
-        fi
+      APP_EXISTS=false
     fi
+  fi
 fi
 
 styled_hash () {
-    vars=`echo -e "$1"`
+  vars=`echo -e "$1"`
 
-    longest=""
-    for word in $vars; do
-        KEY=`echo $word | cut -d"=" -f1`
-        if [ ${#KEY} -gt ${#longest} ]; then
-            longest=$KEY
-        fi
+  longest=""
+  for word in $vars; do
+    KEY=`echo $word | cut -d"=" -f1`
+    if [ ${#KEY} -gt ${#longest} ]; then
+      longest=$KEY
+    fi
+  done
+
+  for word in $vars; do
+    KEY=`echo $word | cut -d"=" -f1`
+    VALUE=`echo $word | cut -d"=" -f2-`
+
+    num_zeros=$((${#longest} - ${#KEY}))
+    zeros=" "
+    while [ $num_zeros -gt 0 ]; do
+      zeros="$zeros "
+      num_zeros=$(($num_zeros - 1))
     done
-
-    for word in $vars; do
-        KEY=`echo $word | cut -d"=" -f1`
-        VALUE=`echo $word | cut -d"=" -f2-`
-
-        num_zeros=$((${#longest} - ${#KEY}))
-        zeros=" "
-        while [ $num_zeros -gt 0 ]; do
-            zeros="$zeros "
-            num_zeros=$(($num_zeros - 1))
-        done
-        echo "$KEY:$zeros$VALUE"
-    done
+    echo "$KEY:$zeros$VALUE"
+  done
 }
 
 config_restart_app() {
-    APP="$1"; IMAGE="app/$APP"
+  APP="$1"; IMAGE="app/$APP"
 
-    echo "-----> Releasing $APP ..."
-    dokku release $APP $IMAGE
-    echo "-----> Release complete!"
-    echo "-----> Deploying $APP ..."
-    dokku deploy $APP $IMAGE
-    echo "-----> Deploy complete!"
+  echo "-----> Releasing $APP ..."
+  dokku release $APP $IMAGE
+  echo "-----> Release complete!"
+  echo "-----> Deploying $APP ..."
+  dokku deploy $APP $IMAGE
+  echo "-----> Deploy complete!"
 }
 
 case "$1" in
 
-    config)
-        APP="$2"
-        ENV_FILE="/home/git/$APP/ENV"
+  config)
+    APP="$2"
+    ENV_FILE="/home/git/$APP/ENV"
 
-        if [ ! -f $ENV_FILE ] || [ ! -s $ENV_FILE ] ; then
-            echo "$APP has no config vars"
-            exit 1
-        fi
+    if [ ! -f $ENV_FILE ] || [ ! -s $ENV_FILE ] ; then
+      echo "$APP has no config vars"
+      exit 1
+    fi
 
-        VARS=`cat $ENV_FILE | grep -Eo "export ([A-Z\d_]+=.*)" | cut -d" " -f2`
+    VARS=`cat $ENV_FILE | grep -Eo "export ([A-Z\d_]+=.*)" | cut -d" " -f2`
 
-        SHELL_OUTPUT=false
-        for var in "$@"; do
-            if [ "$var" == "--shell"]; then
-                SHELL_OUTPUT=true
-            fi
-        done
+    SHELL_OUTPUT=false
+    for var in "$@"; do
+      if [ "$var" == "--shell"]; then
+        SHELL_OUTPUT=true
+      fi
+    done
 
-        if [ ! $SHELL_OUTPUT ]; then
-            echo $VARS
-            exit 1
-        fi
+    if [ ! $SHELL_OUTPUT ]; then
+      echo $VARS
+      exit 1
+    fi
 
-        echo "=== $APP Config Vars"
-        styled_hash "$VARS"
-    ;;
+    echo "=== $APP Config Vars"
+    styled_hash "$VARS"
+  ;;
 
-    config:get)
-        if [[ -z $3 ]]; then
-            echo "Usage: dokku config:get APP KEY"
-            echo "Must specify KEY."
-            exit 1
-        fi
+  config:get)
+    if [[ -z $3 ]]; then
+      echo "Usage: dokku config:get APP KEY"
+      echo "Must specify KEY."
+      exit 1
+    fi
 
-        APP="$2";
-        ENV_FILE="/home/git/$APP/ENV"
+    APP="$2";
+    ENV_FILE="/home/git/$APP/ENV"
 
-        if [ ! -f $ENV_FILE ] || [ ! -s $ENV_FILE ] ; then
-            exit 1
-        fi
+    if [ ! -f $ENV_FILE ] || [ ! -s $ENV_FILE ] ; then
+      exit 1
+    fi
 
-        KEY="$3"
+    KEY="$3"
 
-        cat $ENV_FILE | grep -Eo "export ([A-Z\d_]+=.*)" | cut -d" " -f2 | grep $KEY | cut -d"=" -f2-
-    ;;
+    cat $ENV_FILE | grep -Eo "export ([A-Z\d_]+=.*)" | cut -d" " -f2 | grep $KEY | cut -d"=" -f2-
+  ;;
 
-    config:set)
-        if [[ -z "${*:3}" ]]; then
-            echo "Usage: dokku config:set APP KEY1=VALUE1 [KEY2=VALUE2 ...]"
-            echo "Must specify KEY and VALUE to set."
-            exit 1
-        fi
+  config:set)
+    if [[ -z "${*:3}" ]]; then
+      echo "Usage: dokku config:set APP KEY1=VALUE1 [KEY2=VALUE2 ...]"
+      echo "Must specify KEY and VALUE to set."
+      exit 1
+    fi
 
-        APP="$2"; IMAGE="app/$APP"
-        APP_DIR="/home/git/$APP"
-        ENV_FILE="APP_DIR/ENV"
-        ENV_ADD=""
-        ENV_TEMP=`cat "${ENV_FILE}"`
-        ID=$(< "$APP_DIR/CONTAINER")
-        VARS="${*:3}"
+    APP="$2"; IMAGE="app/$APP"
+    APP_DIR="/home/git/$APP"
+    ENV_FILE="APP_DIR/ENV"
+    ENV_ADD=""
+    ENV_TEMP=`cat "${ENV_FILE}"`
+    ID=$(< "$APP_DIR/CONTAINER")
+    VARS="${*:3}"
 
-        for var in $VARS; do
-            KEY=`echo ${var} | grep -Eo "([a-zA-Z\d_]+=.*)" | cut -d"=" -f1`
-            VALUE=`echo ${var} | grep -Eo "([a-zA-Z\d_]+=.*)" | cut -d"=" -f2-`
+    for var in $VARS; do
+      KEY=`echo ${var} | grep -Eo "([a-zA-Z\d_]+=.*)" | cut -d"=" -f1`
+      VALUE=`echo ${var} | grep -Eo "([a-zA-Z\d_]+=.*)" | cut -d"=" -f2-`
 
-            if [ ${#VALUE} -gt 0 ]; then
-                ENV_TEMP=$(echo -e "${ENV_TEMP}" | sed "/^export $KEY=/ d")
-                ENV_TEMP="${ENV_TEMP}\nexport ${var}"
-                ENV_ADD=$(echo -e "${ENV_ADD}" | sed "/^$KEY=/ d")
-                ENV_ADD="${ENV_ADD}\n${var}"
-            fi
-        done
+      if [ ${#VALUE} -gt 0 ]; then
+        ENV_TEMP=$(echo -e "${ENV_TEMP}" | sed "/^export $KEY=/ d")
+        ENV_TEMP="${ENV_TEMP}\nexport ${var}"
+        ENV_ADD=$(echo -e "${ENV_ADD}" | sed "/^$KEY=/ d")
+        ENV_ADD="${ENV_ADD}\n${var}"
+      fi
+    done
 
-        echo "Setting config vars and restarting $APP"
-        styled_hash "$ENV_ADD"
+    echo "Setting config vars and restarting $APP"
+    styled_hash "$ENV_ADD"
 
-        echo -e "$ENV_TEMP" | sort > $ENV_FILE
-        config_restart_app $APP
-    ;;
+    echo -e "$ENV_TEMP" | sort > $ENV_FILE
+    config_restart_app $APP
+  ;;
 
-    config:unset)
-        if [[ -z $3 ]]; then
-            echo "Usage: dokku config:unset APP KEY1 [KEY2 ...]"
-            echo "Must specify KEY to unset."
-            exit 1
-        fi
+  config:unset)
+    if [[ -z $3 ]]; then
+      echo "Usage: dokku config:unset APP KEY1 [KEY2 ...]"
+      echo "Must specify KEY to unset."
+      exit 1
+    fi
 
-        APP="$2"; IMAGE="app/$APP"
-        APP_DIR="/home/git/$APP"
-        ENV_FILE="$APP_DIR/ENV"
-        ENV_TEMP=`cat "${ENV_FILE}"`
-        ID=$(< "$APP_DIR/CONTAINER")
-        VARS="${*:3}"
+    APP="$2"; IMAGE="app/$APP"
+    APP_DIR="/home/git/$APP"
+    ENV_FILE="$APP_DIR/ENV"
+    ENV_TEMP=`cat "${ENV_FILE}"`
+    ID=$(< "$APP_DIR/CONTAINER")
+    VARS="${*:3}"
 
-        for var in $VARS; do
-            echo "Unsetting $var and restarting $APP"
-            ENV_TEMP=$(echo -e "${ENV_TEMP}" | sed "/^export $var=/ d")
+    for var in $VARS; do
+      echo "Unsetting $var and restarting $APP"
+      ENV_TEMP=$(echo -e "${ENV_TEMP}" | sed "/^export $var=/ d")
 
-            echo -e "$ENV_TEMP" | sort > $ENV_FILE
-            config_restart_app $APP
-        done
-    ;;
+      echo -e "$ENV_TEMP" | sort > $ENV_FILE
+      config_restart_app $APP
+    done
+  ;;
 
-    help)
-        cat && cat<<EOF
-        config <app>                                    display the config vars for an app
-        config:get <app> KEY                            display a config value for an app
-        config:set <app> KEY1=VALUE1 [KEY2=VALUE2 ...]  set one or more config vars
-        config:unset <app> KEY1 [KEY2 ...]              unset one or more config vars
+  help)
+    cat && cat<<EOF
+    config <app>                                    display the config vars for an app
+    config:get <app> KEY                            display a config value for an app
+    config:set <app> KEY1=VALUE1 [KEY2=VALUE2 ...]  set one or more config vars
+    config:unset <app> KEY1 [KEY2 ...]              unset one or more config vars
 EOF
-    ;;
+  ;;
 
 esac
 cat
