@@ -27,4 +27,8 @@ $ dokku help
 TODO
 ----
 
-- Test this against a real dokku instance
+- the regex for validation is wrong
+- it should validate before setting configuration
+- always sorting the output
+- removing empty lines
+- possibly adding pluginhooks to this?
