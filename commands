@@ -110,7 +110,7 @@ case "$1" in
 
     APP="$2"; IMAGE="app/$APP"
     APP_DIR="/home/git/$APP"
-    ENV_FILE="APP_DIR/ENV"
+    ENV_FILE="$APP_DIR/ENV"
     ENV_ADD=""
     ENV_TEMP=`cat "${ENV_FILE}"`
     ID=$(< "$APP_DIR/CONTAINER")
