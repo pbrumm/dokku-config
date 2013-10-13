@@ -28,7 +28,6 @@ TODO
 ----
 
 - the regex for validation is wrong
-- it should validate before setting configuration
-- always sorting the output
+- it should validate each key before setting configuration
 - removing empty lines
 - possibly adding pluginhooks to this?
