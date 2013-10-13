@@ -16,7 +16,10 @@ if [[ $1 == config:* ]]; then
       exit 1
     fi
 
-    [ -f $ENV_FILE ] || touch $ENV_FILE
+    [ -f $ENV_FILE ] || {
+      echo "-----> Creating $ENV_FILE"
+      touch $ENV_FILE
+    }
   fi
 fi
 
@@ -125,7 +128,7 @@ case "$1" in
       fi
     done
 
-    echo "Setting config vars and restarting $APP"
+    echo "-----> Setting config vars and restarting $APP"
     styled_hash "$ENV_ADD"
 
     echo -e "$ENV_TEMP" | sort > $ENV_FILE
@@ -145,7 +148,7 @@ case "$1" in
     VARS="${*:3}"
 
     for var in $VARS; do
-      echo "Unsetting $var and restarting $APP"
+      echo "-----> Unsetting $var and restarting $APP"
       ENV_TEMP=$(echo -e "${ENV_TEMP}" | sed "/^export $var=/ d")
 
       echo -e "$ENV_TEMP" | sort > $ENV_FILE
