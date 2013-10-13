@@ -69,7 +69,7 @@ case "$1" in
       exit 1
     fi
 
-    VARS=`cat $ENV_FILE | grep -Eo "export ([A-Z\d_]+=.*)" | cut -d" " -f2`
+    VARS=`cat $ENV_FILE | grep -Eo "export ([a-zA-Z\d_]+=.*)" | cut -d" " -f2`
 
     SHELL_OUTPUT=false
     for var in "$@"; do
@@ -100,7 +100,7 @@ case "$1" in
 
     KEY="$3"
 
-    cat $ENV_FILE | grep -Eo "export ([A-Z\d_]+=.*)" | cut -d" " -f2 | grep $KEY | cut -d"=" -f2-
+    cat $ENV_FILE | grep -Eo "export ([a-zA-Z\d_]+=.*)" | cut -d" " -f2 | grep $KEY | cut -d"=" -f2-
   ;;
 
   config:set)
