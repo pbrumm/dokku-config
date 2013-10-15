@@ -71,17 +71,12 @@ case "$1" in
 
     VARS=`cat $ENV_FILE | grep -Eo "export ([a-zA-Z_][a-zA-Z0-9_]*=.*)" | cut -d" " -f2`
 
-    SHELL_OUTPUT=false
     for var in "$@"; do
-      if [ "$var" == "--shell"]; then
-        SHELL_OUTPUT=true
+      if [[ "$var" == "--shell" ]]; then
+        cat $ENV_FILE
+        exit 0
       fi
     done
-
-    if [ ! $SHELL_OUTPUT ]; then
-      echo $VARS
-      exit 1
-    fi
 
     echo "=== $APP Config Vars"
     styled_hash "$VARS"
