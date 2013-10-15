@@ -27,7 +27,5 @@ $ dokku help
 TODO
 ----
 
-- the regex for validation is wrong
-- it should validate each key before setting configuration
 - removing empty lines
 - possibly adding pluginhooks to this?
