@@ -27,5 +27,4 @@ $ dokku help
 TODO
 ----
 
-- removing empty lines
 - possibly adding pluginhooks to this?

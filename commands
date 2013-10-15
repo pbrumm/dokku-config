@@ -134,7 +134,7 @@ case "$1" in
       echo "-----> Setting config vars and restarting $APP"
       styled_hash "$ENV_ADD"
 
-      echo -e "$ENV_TEMP" | sort > $ENV_FILE
+      echo -e "$ENV_TEMP" | sed '/^$/d' | sort > $ENV_FILE
       config_restart_app $APP
     fi
   ;;
@@ -155,7 +155,7 @@ case "$1" in
       echo "-----> Unsetting $var and restarting $APP"
       ENV_TEMP=$(echo -e "${ENV_TEMP}" | sed "/^export $var=/ d")
 
-      echo -e "$ENV_TEMP" | sort > $ENV_FILE
+      echo -e "$ENV_TEMP" | sed '/^$/d' | sort > $ENV_FILE
       config_restart_app $APP
     done
   ;;
